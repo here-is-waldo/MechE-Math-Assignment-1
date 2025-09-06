@@ -1,0 +1,90 @@
+% function x = bisection_solver(fun,x_left,x_right)
+% disp('hi')
+% end
+%% 
+function Assignemnt1
+    x_range = linspace(-10,38,200);
+
+    [y_vals,dydx] = test_func(x_range);
+
+     x0 = -2;
+     max_iter = 200;
+     dx_tol = 1e-7;
+     y_tol = 1e-7;
+
+    [x_root1,exit_flag] = newton_solve(@test_func, x0, max_iter, dx_tol,y_tol);
+    [f_root1,~] = test_func(x_root1);
+    
+    x_root_base = x_root1;
+
+    x0=50;
+    [x_root2,exit_flag] = newton_solve(@test_func, x0, max_iter, dx_tol,y_tol);
+    [f_root2,~] = test_func(x_root2);
+
+    figure(1);
+    hold on;
+    plot(x_range,y_vals,'k')
+    plot(x_range,x_range*0,'r--')
+    plot(x_root1,f_root1,"bo",'MarkerFaceColor','b','MarkerSize',3);
+    plot(x_root2,f_root2,"bo",'MarkerFaceColor','b','MarkerSize',3);
+
+    figure(2);
+
+    all_iteration_list =[];
+    all_error_list = [];
+
+    all_error_current_list = [];
+    all_error_next_list = [];
+
+     for n = 1:100
+         x0 = x_root_base+ (2*rand()-.5);
+         [~,~,x_guess_list] = newton_solve(@test_func, x0, max_iter, dx_tol,y_tol);
+         iteration_list = 1:length(x_guess_list);
+         error_list = abs(x_guess_list-x_root_base);
+         all_iteration_list = [all_iteration_list, iteration_list];
+         all_error_list = [all_error_list,error_list];
+
+         current_error = error_list(1:end-1);
+         next_error = error_list(2:end);
+
+         all_error_current_list = [all_error_current_list,current_error];
+         all_error_next_list = [];
+     end
+
+    semilogy(abs(x_guess_list1-x_root1));
+
+    figure(3);
+    loglog(all_error_current_list,all_error_next_list)
+end
+
+function [x_root,exit_flag,x_guess_list1] = newton_solve(f_in,x0,max_iter,dx_tol,y_tol)
+    x_prev = x0-2*dx_tol;    
+    x_val = x0;
+    [f_val,dfdx_val] = f_in(x_val);
+
+    count = 0;
+    x_guess_list = x_val;
+
+    while abs(dfdx_val)>1e-7 && abs(x_val-x_prev) > dx_tol && count<max_iter && abs(f_val)>y_tol
+        x_prev = x_val;
+        x_val = x_val - f_val/dfdx_val;
+
+        [f_val, dfdx_val] = f_in(x_val);
+        count=count+1;
+        x_guess_list(end+1) = x_val;
+   end
+
+    x_root = x_val;
+
+   %assume success
+   exit_flag =0;
+   if abs(x_val-x_prev) > dx_tol && abs(f_val)>y_tol
+       exit_flag = 1;
+   end
+
+end
+
+function [f_val, dfdx_vals] = test_func(x_range)
+    f_val = @(x_range) (x_range.^3)/100 - (x_range.^2)/8 + 2*x_range + 6*sin(x_range/2+6) -.7 - exp(x_range/6);
+    dfdx = @(x_range) 3*(x_range.^2)/100 - 2*x_range/8 + 2 +(6/2)*cos(x_range/2+6) - exp(x_range/6)/6;
+end
