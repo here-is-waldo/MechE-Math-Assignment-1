@@ -49,7 +49,7 @@ function Assignment1Newton()
     plot(abs(x_guess_list-x_root1));
 
     figure(3);
-    loglog(all_error_current_list,all_error_next_list,"or")
+    loglog(all_error_current_list,all_error_next_list,'ro','markerfacecolor','r','markersize',1)
 end
 
 %%NEWTON SOLVER
