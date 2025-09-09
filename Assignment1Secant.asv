@@ -9,14 +9,14 @@ function Assignment1Secant()
      dx_tol = 1e-7;
      y_tol = 1e-7;
 
-    [x_root1,exit_flag] = secant_solve(@test_func, x0, x1, max_iter, dx_tol,y_tol);
+    [~,x_root1,exit_flag] = secant_solve(@test_func, x0, max_iter, dx_tol,y_tol);
     [f_root1] = test_func(x_root1);
     
     x_root_base = x_root1;
 
     x0 = 35;
     x1 = 50;
-    [x_root2,exit_flag] = secant_solve(@test_func, x0, x1, max_iter, dx_tol,y_tol);
+    [~,x_root2,exit_flag] = secant_solve(@test_func, x0, max_iter, dx_tol,y_tol);
     [f_root2] = test_func(x_root2);
 
     figure(1);
@@ -25,7 +25,6 @@ function Assignment1Secant()
     plot(x_range,x_range*0,'r--')
     plot(x_root1,f_root1,"bo",'MarkerFaceColor','b','MarkerSize',3);
     plot(x_root2,f_root2,"bo",'MarkerFaceColor','b','MarkerSize',3);
-    legend("function","zero","root1","root2")
 
     all_iteration_list =[];
     all_error_list = [];
@@ -35,7 +34,7 @@ function Assignment1Secant()
 
      for n = 1:100
          x0 = x_root_base + (2*rand()-.5);
-         [~,~,x_guess_list] = secant_solve(@test_func, x0, x1, max_iter, dx_tol,y_tol);
+         [~,~,x_guess_list] = secant_solve(@test_func, x0, max_iter, dx_tol,y_tol);
          iteration_list = 1:length(x_guess_list);
          error_list = abs(x_guess_list-x_root_base);
          all_iteration_list = [all_iteration_list, iteration_list];
@@ -56,37 +55,34 @@ function Assignment1Secant()
 end
 
 %%SECANT SOLVER
-function [x_root,exit_flag,x_guess_list] = secant_solve(f_in,x0,x1,max_iter,dx_tol,y_tol)
-  x_prev = x0;
-  x_tprev = x1;   
-  x_val = x_prev+2*dx_tol;
-
+function [x_root,exit_flag,x_guess_list] = secant_solve(f_in,x0,max_iter,dx_tol,y_tol)
+  x_prev = x0-2*dx_tol;
+  %x_tprev = x_prev-2*dx_tol;   
+  x_val = x0;
   [f_val] = f_in(x_val);
-  % [f_prev] = f_in(x_prev);
-  % [f_tprev] = f_in(x_tprev);    
+  [f_prev] = f_in(x_prev);
+  %[f_tprev] = f_in(x_tprev);    
+    x2=(x0*f(x1)-x1*f(x0))/(f(x1)-f(x0));
+    x0=x1;        
+    x1=x2;
+    err=abs(x1-x0);
+    root=x2; 
     
   count = 0;
-
   x_guess_list = x_val;
   x_prev_guess_list = x_prev;
 
-  check = abs((x_val-x_prev));
+  while abs((x_val-x_prev)) > dx_tol && count<max_iter && abs(f_val) > y_tol && abs(f_prev) > y_tol
+        %x_tprev = x_prev;
+        x_prev = x_val;
+        x_val = x_val - f_val*((x_val-x_prev)/(f_val-f_prev));
 
-  while check > dx_tol && count<max_iter && abs(f_val) > y_tol
         [f_val] = f_in(x_val);
         [f_prev] = f_in(x_prev);
-        [f_tprev] = f_in(x_tprev);
-
-
-        x_val = (x_tprev*f_prev-x_prev*f_tprev)/(f_prev-f_tprev);
-        check = abs((x_val-x_prev));
-        x_tprev=x_prev;        
-        x_prev=x_val;
-
+        %[f_tprev] = f_in(x_tprev);
+        count=count+1;
         x_guess_list(end+1) = x_val;
         x_prev_guess_list(end+1) = x_prev; 
-
-        count=count+1;
    end
 
     x_root = x_val;
