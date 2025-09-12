@@ -51,8 +51,32 @@ function Assignment1Secant()
     figure(2);
     plot(abs(x_guess_list-x_root1));
 
+        x_regression = []; % e_n
+    y_regression = []; % e_{n+1}
+    %iterate through the collected data
+    error_list0 = all_error_current_list;
+    error_list1 = all_error_next_list; 
+    index_list = error_list1;
+
+for n=1:length(index_list)
+    if error_list0(n)>1e-14 && error_list0(n)<1e-2 && error_list1(n)>1e-14 && error_list1(n)<1e-2 %&& index_list(n)>2
+        x_regression(end+1) = error_list0(n);
+        y_regression(end+1) = error_list1(n);
+    end
+end
+    [p,k] = generate_error_fit(x_regression,y_regression);
+    
+    fit_line_x = 10.^[-16:.01:1];
+    fit_line_y = k*fit_line_x.^p;
+
     figure(3);
-    loglog(all_error_current_list,all_error_next_list,'ro','markerfacecolor','r','markersize',1)
+    loglog(all_error_current_list,all_error_next_list,'ro','markerfacecolor',[1,0,0],'markersize',5)
+    hold on;
+    loglog(x_regression,y_regression,'bo','markerfacecolor',[0,0,1],'markersize',5)
+    loglog(fit_line_x,fit_line_y,'k-','linewidth',2)
+    hold off;
+    xlim([10^-16 10^1])
+    ylim([10^-16 10^1])
 end
 
 %%SECANT SOLVER
@@ -103,4 +127,17 @@ end
 %%IMPORT FUNCTION
 function [f_val] = test_func(x_range)
     f_val = (x_range.^3)/100 - (x_range.^2)/8 + 2*x_range + 6*sin(x_range/2+6) -.7 - exp(x_range/6);
+end
+
+function [p,k] = generate_error_fit(x_regression,y_regression)
+
+    Y = log(y_regression)';
+    X1 = log(x_regression)';
+    X2 = ones(length(X1),1);
+    MEGAX = [X1,X2];
+%run the regression
+    coeff_vec = regress(Y,MEGAX);
+%pull out the coefficients from the fit
+    p = coeff_vec(1);
+    k = exp(coeff_vec(2));
 end

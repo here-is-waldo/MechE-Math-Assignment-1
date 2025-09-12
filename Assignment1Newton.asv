@@ -1,4 +1,4 @@
-function Assignment1Newton()
+function NewtonSolving()
     x_range = linspace(-10,38,200);
 
     [y_vals,dfdx] = test_func(x_range);
@@ -16,6 +16,46 @@ function Assignment1Newton()
     x0=35;
     [x_root2,exit_flag] = newton_solve(@test_func, x0, max_iter, dx_tol,y_tol);
     [f_root2] = test_func(x_root2);
+
+% %declare input_list as a global variable
+% global input_list;
+% %number of trials we would like to perform
+% num_iter = 1000;
+% %list for the initial guesses that we would like
+% %to use each trial. These guesses have all been chosen
+% %so that each trial will converge to the same root
+% %because the root is somewhere between -5 and 5.
+% x0_list = linspace(-5,5,num_iter);
+% %list of estimate at current iteration (x_{n})
+% %compiled across all trials
+% x_current_list = [];
+% %list of estimate at next iteration (x_{n+1})
+% %compiled across all trials
+% x_next_list = [];
+% %keeps track of which iteration (n) in a trial
+% %each data point was collected from
+% index_list = [];
+% %loop through each trial
+% for n = 1:num_iter
+% %pull out the left and right guess for the trial
+% x0 = x0_list(n);
+% %clear the input_list global variable
+% input_list = [];
+% %run the newton solver
+% x_root = newton_solve(@test_func,x0);
+% %at this point, input_list will be populated with the values that
+% %the solver called at each iteration.
+% %In other words, it is now [x_1,x_2,...x_n-1,x_n]
+% %append the collected data to the compilation
+% x_current_list = [x_current_list,input_list(1:end-1)];
+% x_next_list = [x_next_list,input_list(2:end)];
+% index_list = [index_list,1:length(input_list)-1];
+% end
+% %At this point, x_current_list corresponds to many many
+% %measurements of x_{n} across many trials
+% %and x_next_list corresponds to many many measurements of
+% %the corresponding value of x_{n+1} across many trials
+% %this is the data the you want to clean and analaze
 
     figure(1);
     hold on;
@@ -54,14 +94,14 @@ function Assignment1Newton()
     
     plot(abs(x_guess_list-x_root1));
 
-    x_regression = []; % e_n
-    y_regression = []; % e_{n+1}
-    %iterate through the collected data
-    error_list0 = all_error_current_list;
-    error_list1 = all_error_next_list; 
-    index_list = error_list1;
+x_regression = []; % e_n
+y_regression = []; % e_{n+1}
+%iterate through the collected data
+error_list0 = all_error_current_list;
+error_list1 = all_error_next_list; 
+index_list = error_list1;
 
-for n=1:length(index_list)
+for n=1:length(error_list0)
     if error_list0(n)>1e-14 && error_list0(n)<1e-2 && error_list1(n)>1e-14 && error_list1(n)<1e-2 %&& index_list(n)>2
         x_regression(end+1) = error_list0(n);
         y_regression(end+1) = error_list1(n);
@@ -73,14 +113,29 @@ end
     fit_line_y = k*fit_line_x.^p;
 
     figure(3);
-    loglog(all_error_current_list,all_error_next_list,'ro','markerfacecolor',[1,0,0],'markersize',5)
+    loglog(all_error_current_list,all_error_next_list,'ro','markerfacecolor',[1,0,0],'markersize',7)
     hold on;
-    loglog(x_regression,y_regression,'bo','markerfacecolor',[0,0,1],'markersize',5)
+    loglog(x_regression,y_regression,'bo','markerfacecolor',[0,0,1],'markersize',7)
     loglog(fit_line_x,fit_line_y,'k-','linewidth',2)
     hold off;
-    xlim([10^-16 10^1])
-    ylim([10^-16 10^1])
 end
+
+% function global_variable()
+% %declare input_list as a global variable
+% global input_list;
+% %initialize input_list to be an empty array
+% input_list = [];
+% %initialize guesses for fzero
+% x0 = 2.7;
+% %run fzero
+% x_root_f0 = fzero(@test_func,x0);
+% %at this point, input_list will be populated with the input arguments
+% %that fzero used to call test_function
+% %plot the inputs
+% plot(1:length(input_list),input_list,'ko','markerfacecolor','k');
+% %reset input_list for the next test
+% input_list = [];
+% end
 
 %%NEWTON SOLVER
 function [x_root,exit_flag,x_guess_list] = newton_solve(f_in,x0,max_iter,dx_tol,y_tol)
