@@ -76,11 +76,12 @@ function Assignment1Newton()
     error_list0 = all_error_current_list;
     error_list1 = all_error_next_list; 
 
-for n=1:length(index_list)
-    if error_list0(n)>1e-14 && error_list0(n)<1e-2 && error_list1(n)>1e-14 && error_list1(n)<1e-2 %&& index_list(n)>2
+    index_fixer = index_list(1:361);
+
+for n=1:length(index_fixer)
+    if error_list0(n)>1e-14 && error_list0(n)<1e-2 && error_list1(n)>1e-14 && error_list1(n)<1e-2 && index_fixer(n)>2
         x_regression(end+1) = error_list0(n);
         y_regression(end+1) = error_list1(n);
-        disp('added')
     end
 end
     [p,k] = generate_error_fit(x_regression,y_regression);

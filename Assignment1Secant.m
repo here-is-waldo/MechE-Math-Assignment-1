@@ -1,5 +1,6 @@
 function Assignment1Secant()
     x_range = linspace(-10,38,200);
+    input_list = setGlobal(x_range);
 
     [y_vals] = test_func(x_range);
 
@@ -30,36 +31,57 @@ function Assignment1Secant()
     all_iteration_list =[];
     all_error_list = [];
 
+    x_current_list = [];
+    x_next_list =[];
+
+    index_list = [];
+
     all_error_current_list = [];
     all_error_next_list = [];
 
-     for n = 1:100
+    all_x_current_list = [];
+    all_x_next_list = [];
+
+     for n = 1:(max_iter/2)
          x0 = x_root_base + (2*rand()-.5);
          [~,~,x_guess_list] = secant_solve(@test_func, x0, x1, max_iter, dx_tol,y_tol);
          iteration_list = 1:length(x_guess_list);
+
+         %input_list =[];
+
          error_list = abs(x_guess_list-x_root_base);
          all_iteration_list = [all_iteration_list, iteration_list];
          all_error_list = [all_error_list,error_list];
+
+         x_current_list = [x_current_list,input_list(1:end-1)];
+         x_next_list = [x_next_list,input_list(2:end)];
 
          current_error = error_list(1:end-1);
          next_error = error_list(2:end);
 
          all_error_current_list = [all_error_current_list,current_error];
          all_error_next_list = [all_error_next_list,next_error];
+
+         all_x_current_list = [all_x_current_list,input_list(1:end-1)];
+         all_x_next_list = [all_x_next_list,input_list(2:end)];
+
+         index_list = [index_list,1:length(input_list)-1];
      end
     
     figure(2);
     plot(abs(x_guess_list-x_root1));
 
-        x_regression = []; % e_n
+    x_regression = []; % e_n
     y_regression = []; % e_{n+1}
     %iterate through the collected data
     error_list0 = all_error_current_list;
     error_list1 = all_error_next_list; 
     index_list = error_list1;
 
-for n=1:length(index_list)
-    if error_list0(n)>1e-14 && error_list0(n)<1e-2 && error_list1(n)>1e-14 && error_list1(n)<1e-2 %&& index_list(n)>2
+    index_fixer = index_list(1:361);
+
+for n=1:length(index_fixer)
+    if error_list0(n)>1e-14 && error_list0(n)<1e-2 && error_list1(n)>1e-14 && error_list1(n)<1e-2 %&& index_fixer(n)>2
         x_regression(end+1) = error_list0(n);
         y_regression(end+1) = error_list1(n);
     end
@@ -127,6 +149,11 @@ end
 %%IMPORT FUNCTION
 function [f_val] = test_func(x_range)
     f_val = (x_range.^3)/100 - (x_range.^2)/8 + 2*x_range + 6*sin(x_range/2+6) -.7 - exp(x_range/6);
+end
+
+function input_list = setGlobal(x_range)
+    global input_list
+    input_list(:,end+1) = x_range;
 end
 
 function [p,k] = generate_error_fit(x_regression,y_regression)
