@@ -94,7 +94,7 @@ end
         fit_line_x = 10.^[-16:.01:1];
         fit_line_y = k*fit_line_x.^p;
 
-plotter(x_range,y_vals,x_root1,x_root2,f_root1,f_root2,x_guess_list,all_error_current_list,all_error_next_list,x_regression,y_regression,fit_line_x,fit_line_y)
+plotter(x_range,y_vals,x_root1,x_root2,f_root1,f_root2,x_guess_list,all_error_current_list,all_error_next_list,x_regression,y_regression,fit_line_x,fit_line_y,solver_flag)
 end
 
 function [x_root1,f_root1,x_root2,f_root2,x_root_base,x_guess_list] = convergence_analysis(solver_flag, test_func, x0, x1, x02, x12, max_iter,dx_tol,y_tol)
@@ -249,19 +249,22 @@ end
 
 %% IMPORT FUNCTION
 function [f_val,dfdx] = test_func(x_range)
-        % f_val = (x_range.^3)/100 - (x_range.^2)/8 + 2*x_range + 6*sin(x_range/2+6) -.7 - exp(x_range/6);
-        % dfdx = 3*(x_range.^2)/100 - 2*x_range/8 + 2 +(6/2)*cos(x_range/2+6) - exp(x_range/6)/6;
+        f_val = (x_range.^3)/100 - (x_range.^2)/8 + 2*x_range + 6*sin(x_range/2+6) -.7 - exp(x_range/6);
+        dfdx = 3*(x_range.^2)/100 - 2*x_range/8 + 2 +(6/2)*cos(x_range/2+6) - exp(x_range/6)/6;
 
         % f_val = (x_range-30.879).^2;
         % dfdx = 2*(x_range-30.879);
 
-        a = 27.3; b = 2; c = 8.3; d = -3;
-        H = exp((x_range-a)/b);
-        dH = H/b;
-        L = 1+H;
-        dL = dH;
-        f_val = c*H./L+d;
-        dfdx = c*(L.*dH-H.*dL)./(L.^2);
+        % a = 27.3; b = 2; c = 8.3; d = -3;
+        % 
+        % H = exp((x_range-a)/b);
+        % dH = H/b;
+        % 
+        % L = 1+H;
+        % dL = dH;
+        % 
+        % f_val = c*H./L+d;
+        % dfdx = c*(L.*dH-H.*dL)./(L.^2);
 end
 
 function input_list = setGlobal(x_range)
@@ -285,19 +288,30 @@ end
 
 %% Plots
 function plotter(x_range,y_vals,x_root1,x_root2,f_root1,f_root2,x_guess_list, ...
-    all_error_current_list,all_error_next_list,x_regression,y_regression,fit_line_x,fit_line_y)
-%Plot 1:
-    figure(1);
+    all_error_current_list,all_error_next_list,x_regression,y_regression,fit_line_x,fit_line_y,solver_flag)
+Names = ["Bisection Method","Newton Method","Secant Method","Fzero"];
+%Plot 1:The Plot
+    subplot(3,1,1);
+    %figure(1);
     hold on;
     plot(x_range,y_vals,'k')
     plot(x_range,x_range*0,'r--')
     plot(x_root1,f_root1,"bo",'MarkerFaceColor','b','MarkerSize',3);
     plot(x_root2,f_root2,"bo",'MarkerFaceColor','b','MarkerSize',3);
-%Plot 2:
-    figure(2);
+    title(Names(solver_flag))
+    xlabel('X')
+    ylabel('Y')
+    legend('Function','Zero','Root 1','Root 2','Location','northeastoutside')
+%Plot 2: Guesses to correct root
+    subplot(3,1,2);
+    %figure(2);
     plot(abs(x_guess_list-x_root1));
-%Plot 3:
-    figure(3);
+    title(Names(solver_flag))
+    xlabel('Iterations')
+    ylabel('Guess Proximity to Root')
+%Plot 3:Error with Fit Line
+    subplot(3,1,3);
+    %figure(3);
     loglog(all_error_current_list,all_error_next_list,'ro','markerfacecolor',[1,0,0],'markersize',5)
     hold on;
     loglog(x_regression,y_regression,'bo','markerfacecolor',[0,0,1],'markersize',5)
@@ -305,4 +319,8 @@ function plotter(x_range,y_vals,x_root1,x_root2,f_root1,f_root2,x_guess_list, ..
     hold off;
     xlim([10^-16 10^1])
     ylim([10^-16 10^1])
+    title(Names(solver_flag))
+    legend('Error List','Cleaned Error List','Fit Line','Location','northeastoutside')
+    xlabel('Current Errors')
+    ylabel('Next Error')
 end
