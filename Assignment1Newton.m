@@ -67,7 +67,6 @@ function Assignment1Newton()
 
 
     figure(2);
-    
     plot(abs(x_guess_list-x_root1));
 
     x_regression = []; % e_n
