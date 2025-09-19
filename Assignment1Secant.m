@@ -148,7 +148,16 @@ end
 
 %%IMPORT FUNCTION
 function [f_val] = test_func(x_range)
-    f_val = (x_range.^3)/100 - (x_range.^2)/8 + 2*x_range + 6*sin(x_range/2+6) -.7 - exp(x_range/6);
+            a = 27.3; b = 2; c = 8.3; d = -3;
+
+        H = exp((x_range-a)/b);
+        dH = H/b;
+
+        L = 1+H;
+        dL = dH;
+
+        f_val = c*H./L+d;
+        dfdx = c*(L.*dH-H.*dL)./(L.^2);
 end
 
 function input_list = setGlobal(x_range)

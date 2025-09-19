@@ -13,15 +13,15 @@ function Assignment1Merge()
 
 % Defining Variables and Setting Up
     solver_flag = 2; % 1= Bisect, 2= Newton, 3= Secant, 4= fzero
-    x_range = linspace(-10,38,200);
+    x_range = linspace(-10,50,200);
     input_list = setGlobal(x_range);
 
     [y_vals, dfdx] = test_func(x_range);
 
-    x0 = -2;
+    x0 = 30;
     x1 = 5;
 
-    x02 = 35;
+    x02 = 40;
     x12 = 50;
 
     max_iter = 200;
@@ -131,14 +131,21 @@ function [x_root1,f_root1,x_root2,f_root2,x_root_base,x_guess_list] = convergenc
         [f_root2] = test_func(x_root2);
     elseif solver_flag == 4
         disp('FZERO')
-        [x_root1,exit_flag,x_guess_list] = fzero(@test_func, x0);
+        my_recorder = input_recorder();
+        f_record = my_recorder.generate_recorder_fun(@test_func);
+
+        x_root1 = fzero(f_record,x0);
+        x_guess_list = my_recorder.get_input_list();
+        my_recorder.clear_input_list();
         [f_root1] = test_func(x_root1);
     
         x_root_base = x_root1;
         
         x0 = x02;
-        [x_root2,exit_flag,~] = fzero(@test_func, x0);
+        x_root2 = fzero(f_record,x0);
+        my_recorder.clear_input_list();
         [f_root2] = test_func(x_root2);
+        
     else
         disp('Bad Input, Please Enter 1-4')
     end
@@ -249,12 +256,12 @@ end
 
 %% IMPORT FUNCTION
 function [f_val,dfdx] = test_func(x_range)
-        f_val = (x_range.^3)/100 - (x_range.^2)/8 + 2*x_range + 6*sin(x_range/2+6) -.7 - exp(x_range/6);
-        dfdx = 3*(x_range.^2)/100 - 2*x_range/8 + 2 +(6/2)*cos(x_range/2+6) - exp(x_range/6)/6;
-
-        % f_val = (x_range-30.879).^2;
-        % dfdx = 2*(x_range-30.879);
-
+        % f_val = (x_range.^3)/100 - (x_range.^2)/8 + 2*x_range + 6*sin(x_range/2+6) -.7 - exp(x_range/6);
+        % dfdx = 3*(x_range.^2)/100 - 2*x_range/8 + 2 +(6/2)*cos(x_range/2+6) - exp(x_range/6)/6;
+        
+        f_val = (x_range-30.879).^2;
+        dfdx = 2*(x_range-30.879);
+        
         % a = 27.3; b = 2; c = 8.3; d = -3;
         % 
         % H = exp((x_range-a)/b);
@@ -309,6 +316,7 @@ Names = ["Bisection Method","Newton Method","Secant Method","Fzero"];
     title(Names(solver_flag))
     xlabel('Iterations')
     ylabel('Guess Proximity to Root')
+    legend('Guess vs Iter','Location','northeastoutside')
 %Plot 3:Error with Fit Line
     subplot(3,1,3);
     %figure(3);
@@ -320,7 +328,30 @@ Names = ["Bisection Method","Newton Method","Secant Method","Fzero"];
     xlim([10^-16 10^1])
     ylim([10^-16 10^1])
     title(Names(solver_flag))
-    legend('Error List','Cleaned Error List','Fit Line','Location','northeastoutside')
+    legend('Error List','Filtered List','Fit Line','Location','northeastoutside')
     xlabel('Current Errors')
     ylabel('Next Error')
+end
+%% Input Recorder Caller
+function input_recorder_example()
+%Create an instance of the input_recorder
+my_recorder = input_recorder();
+%Use input_recorder to generate a version of the test function
+%that records the input after every iteration
+%Since test_fun is defined using function keyword
+f_record = my_recorder.generate_recorder_fun(@test_function);
+%If test_fun is defined as an anonymous function:
+%f_record = my_recorder.generate_recorder_fun(test_function);
+%initialize guesses for fzero
+x0 = 2.7;
+%Call your root finder using the recording function:
+x_root = fzero(f_record,x0);
+%See what input values were used when f_record was called:
+input_list = my_recorder.get_input_list();
+%at this point, input_list will be populated with the input arguments
+%that fzero used to call test_function
+%plot the inputs
+semilogy(1:length(input_list),abs(input_list-x_root),'ko','markerfacecolor','k');
+%reset input_list for the next test
+my_recorder.clear_input_list();
 end
